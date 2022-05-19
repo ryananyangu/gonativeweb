@@ -5,11 +5,26 @@ import (
 	"net/http"
 )
 
-func index_handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Great first step")
+func SetupRouter() {
+
+	// default_handler
+
+	for path, handlers := range Routes {
+		fmt.Printf("Registering paths : %s \n", path)
+		http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+			handler, ok := handlers[r.Method]
+			if !ok {
+				http.Error(w, r.Method+" not allowed", http.StatusMethodNotAllowed)
+				return
+			}
+
+			handler(w, r)
+		})
+	}
+
 }
 
 func main() {
-	http.HandleFunc("/", index_handler)
+	SetupRouter()
 	http.ListenAndServe(":8080", nil)
 }
